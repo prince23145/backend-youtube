@@ -2,7 +2,7 @@ import dotenv from "dotenv"
 import db_connection from "./db/dbconnect.js";
 import { app } from "./app.js";
 dotenv.config({
-    path:'.env'
+    path:'./.env'
 })
 
 
