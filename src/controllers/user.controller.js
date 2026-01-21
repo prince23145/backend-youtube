@@ -72,6 +72,7 @@ const registerUser = asynchandler(async (req, res) => {
     .status(201)
     .json(new ApiResponse(200, createdUser, "User registered Successfully"));
 });
+
 const loginUser = asynchandler(async (req, res) => {
   //  req body
   // username or email
@@ -81,10 +82,10 @@ const loginUser = asynchandler(async (req, res) => {
 
   const { username, email, password } = req.body;
 
-  if (!username || !email) {
+  if (!username && !email) {
     throw new ApiError(400, "enter email or username");
   }
-  const userfind = User.findOne({
+  const userfind = await User.findOne({
     $or: [{ username }, { email }],
   });
 
@@ -112,17 +113,15 @@ const loginUser = asynchandler(async (req, res) => {
     .status(200)
     .cookie("refreshToken", refreshToken, Options)
     .cookie("accessToken", accessToken, Options)
-    .json(
-      new ApiResponse(
-        200,
-        {
-          user: isLoggedIn,
-          accessToken,
-          refreshToken,
-        },
-        "userLogged in Successfully",
-      ),
-    );
+  .json({
+    status: 200,
+    data: {
+      user: isLoggedIn,
+      accessToken,
+      refreshToken,
+    },
+    message: "User logged in successfully",
+  });
 });
 
 const logoutUser = asynchandler(async (req, res) => {
@@ -137,16 +136,16 @@ const logoutUser = asynchandler(async (req, res) => {
       new: true,
     },
   );
-});
 
-const options = {
-  httpOnly: true,
-  secure: true,
-};
-return res
-  .status(200)
-  .clearCookie("accessToken", options)
-  .clearCookie("refershtoken", options)
-  .json(200, {}, "User Logout User");
+  const options = {
+    httpOnly: true,
+    secure: true,
+  };
+  return res
+    .status(200)
+    .clearCookie("refreshToken", options)
+    .clearCookie("accessToken", options)
+    .json(new ApiResponse(200, {}, "User Logout User"));
+});
 
 export { registerUser, loginUser, logoutUser };
